@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using TMPro;
 using UnityEngine;
 
 public class EETDataProviderTest : MonoBehaviour
@@ -16,6 +17,14 @@ public class EETDataProviderTest : MonoBehaviour
     private GameObject CameraRelativeCombinedGazeObject;
     [SerializeField]
     private ExtendedEyeGazeDataProvider extendedEyeGazeDataProvider;
+    [SerializeField]
+    private Canvas canvas;
+    [SerializeField]
+    private TextMeshProUGUI leftText;
+    [SerializeField]
+    private TextMeshProUGUI rightText;
+    [SerializeField]
+    private TextMeshProUGUI combinedText;
 
     private DateTime timestamp;
     private ExtendedEyeGazeDataProvider.GazeReading gazeReading;
@@ -31,6 +40,7 @@ public class EETDataProviderTest : MonoBehaviour
         {
             // position gaze object 1.5 meters out from the gaze origin along the gaze direction
             LeftGazeObject.transform.position = gazeReading.EyePosition + 1.5f * gazeReading.GazeDirection;
+            leftText.text = "Left: " + gazeReading.GazeDirection.ToString("F6");
             LeftGazeObject.SetActive(true);
         }
         else
@@ -44,6 +54,7 @@ public class EETDataProviderTest : MonoBehaviour
         {
             // position gaze object 1.5 meters out from the gaze origin along the gaze direction
             RightGazeObject.transform.position = gazeReading.EyePosition + 1.5f * gazeReading.GazeDirection;
+            rightText.text = "Right: " + gazeReading.GazeDirection.ToString("F6");
             RightGazeObject.SetActive(true);
         }
         else
@@ -57,6 +68,7 @@ public class EETDataProviderTest : MonoBehaviour
         {
             // position gaze object 1.5 meters out from the gaze origin along the gaze direction
             CombinedGazeObject.transform.position = gazeReading.EyePosition + 1.5f * gazeReading.GazeDirection;
+            combinedText.text = "Combined: " + gazeReading.GazeDirection.ToString("F6");
             CombinedGazeObject.SetActive(true);
         }
         else
@@ -70,6 +82,7 @@ public class EETDataProviderTest : MonoBehaviour
         {
             // position gaze object 1.5 meters out from the gaze origin along the gaze direction
             CameraRelativeCombinedGazeObject.transform.localPosition = gazeReading.EyePosition + 1.5f * gazeReading.GazeDirection;
+            canvas.transform.localPosition = gazeReading.EyePosition + 1.5f * Vector3.forward;
             CameraRelativeCombinedGazeObject.SetActive(true);
         }
         else

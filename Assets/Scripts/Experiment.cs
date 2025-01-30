@@ -8,6 +8,7 @@ public class Experiment : MonoBehaviour
 {
 
     public ExtendedEyeGazeDataProvider extendedEyeGazeDataProvider;
+    public Canvas canvas;
     public TextMeshProUGUI leftText;
     public TextMeshProUGUI rightText;
 
@@ -21,7 +22,10 @@ public class Experiment : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        leftText.text = "Left: " + extendedEyeGazeDataProvider.GetWorldSpaceGazeReading(ExtendedEyeGazeDataProvider.GazeType.Left).EyePosition.ToString();
-        rightText.text = "Right: " + extendedEyeGazeDataProvider.GetWorldSpaceGazeReading(ExtendedEyeGazeDataProvider.GazeType.Right).EyePosition.ToString();
+        leftText.text = "Left: " + extendedEyeGazeDataProvider.GetWorldSpaceGazeReading(ExtendedEyeGazeDataProvider.GazeType.Left).GazeDirection.ToString();
+        rightText.text = "Right: " + extendedEyeGazeDataProvider.GetWorldSpaceGazeReading(ExtendedEyeGazeDataProvider.GazeType.Right).GazeDirection.ToString();
+
+        Debug.Log(leftText.text);
+        Debug.Log(rightText.text);
     }
 }
