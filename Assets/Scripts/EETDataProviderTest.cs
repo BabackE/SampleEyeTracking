@@ -16,6 +16,8 @@ public class EETDataProviderTest : MonoBehaviour
     [SerializeField]
     private GameObject CameraRelativeCombinedGazeObject;
     [SerializeField]
+    private GameObject VergenceObject;
+    [SerializeField]
     private ExtendedEyeGazeDataProvider extendedEyeGazeDataProvider;
     [SerializeField]
     private Canvas canvas;
@@ -28,7 +30,7 @@ public class EETDataProviderTest : MonoBehaviour
 
     private DateTime timestamp;
     private ExtendedEyeGazeDataProvider.GazeReading gazeReading;
-
+    private ExtendedEyeGazeDataProvider.VergenceReading vergeReading;
 
     void Update()
     {
@@ -60,6 +62,20 @@ public class EETDataProviderTest : MonoBehaviour
         else
         {
             RightGazeObject.SetActive(false);
+        }
+
+        //get vergence reading and pass to vergence ball;
+        //vergeReading = extendedEyeGazeDataProvider.GetWorldSpaceCyclopVergence();
+        vergeReading = extendedEyeGazeDataProvider.GetWorldSpaceBinocularVergence();
+        if (vergeReading.IsValid)
+        {
+            //VergenceObject.transform.position = vergeReading.EyePosition + 1.2f * vergeReading.GazeDirection;
+            VergenceObject.transform.position = vergeReading.EyePosition + vergeReading.FocusPoint;
+            VergenceObject.SetActive(true);
+        }
+        else
+        {
+            VergenceObject.SetActive(false);
         }
 
         // positioning for combined gaze object
