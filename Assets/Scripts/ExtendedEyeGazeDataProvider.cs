@@ -33,6 +33,21 @@ public class ExtendedEyeGazeDataProvider : MonoBehaviour
         }
     }
 
+    public struct VergenceReading
+    {
+        public bool IsValid;
+        public Vector3 EyePosition;
+        public Vector3 GazeDirection;
+        public Vector3 FocusPoint;
+        public VergenceReading(bool isValid, Vector3 position, Vector3 direction, Vector3 foci)
+        {
+            IsValid = isValid;
+            EyePosition = position;
+            GazeDirection = direction;
+            FocusPoint = foci;
+        }
+    }
+
     private Camera _mainCamera;
     private EyeGazeTrackerWatcher _watcher;
     private EyeGazeTracker _eyeGazeTracker;
@@ -155,6 +170,116 @@ public class ExtendedEyeGazeDataProvider : MonoBehaviour
         _gazeReading.GazeDirection = _eyeGazeTrackerSpaceToWorld.MultiplyVector(ToUnity(_trackerSpaceGazeDirection));
         _gazeReading.IsValid = true;
         return _gazeReading;
+    }
+
+    private System.Numerics.Vector3 _trackerSpaceGazeOriginLeft;
+    private System.Numerics.Vector3 _trackerSpaceGazeDirectionLeft;
+    private System.Numerics.Vector3 _trackerSpaceGazeOriginRight;
+    private System.Numerics.Vector3 _trackerSpaceGazeDirectionRight;
+    private Vector3 _cyclopDirection;
+    private Vector3 _cyclopGaze;
+
+    private Vector3 leftGaze;
+    private Vector3 rightGaze;
+    private Vector3 leftDirection;
+    private Vector3 rightDirection;
+    private Vector3 leftProjection;
+    private Vector3 rightProjection;
+    private Vector3 cyclopPlaneNormal;
+    private Vector3 cyclopFocus;
+    private float leftScalar;
+    private float rightScalar;
+    private float divisor;
+    private VergenceReading vergenceReading;
+    private VergenceReading _invalidVergenceReading = new VergenceReading(false, Vector3.zero, Vector3.zero, Vector3.zero);
+    public VergenceReading GetWorldSpaceCyclopVergence()
+    {
+        if(_eyeGazeTrackerReading.TryGetLeftEyeGazeInTrackerSpace(out _trackerSpaceGazeOriginLeft, out _trackerSpaceGazeDirectionLeft))
+        {
+            if(_eyeGazeTrackerReading.TryGetRightEyeGazeInTrackerSpace(out _trackerSpaceGazeOriginRight, out _trackerSpaceGazeDirectionRight))
+            {
+                leftGaze = ToUnity(_trackerSpaceGazeOriginLeft);
+                leftDirection = ToUnity(_trackerSpaceGazeDirectionLeft);
+                rightGaze = ToUnity(_trackerSpaceGazeOriginRight); 
+                rightDirection = ToUnity(_trackerSpaceGazeDirectionRight);
+
+                // Construct the matrix to transform gaze data from tracker space to Unity world space
+                _eyeGazeTrackerSpaceToWorld = (_mixedRealityPlayspace != null) ?
+                        _mixedRealityPlayspace.localToWorldMatrix * _eyeGazeTrackerSpaceToPlayspace :
+                        _eyeGazeTrackerSpaceToPlayspace;
+
+                //calculate cyclopean gaze direction
+                _cyclopDirection = ToUnity(System.Numerics.Vector3.Normalize(System.Numerics.Vector3.Add(_trackerSpaceGazeDirectionLeft, _trackerSpaceGazeDirectionRight)));
+                _cyclopGaze = ToUnity(System.Numerics.Vector3.Divide(System.Numerics.Vector3.Add(_trackerSpaceGazeOriginLeft, _trackerSpaceGazeOriginRight), 2.0f));
+
+                cyclopPlaneNormal = Vector3.Normalize(Vector3.Cross(_cyclopDirection, (leftGaze-rightGaze)));
+                leftProjection = Vector3.ProjectOnPlane(leftDirection, cyclopPlaneNormal);
+                rightProjection = Vector3.ProjectOnPlane(rightDirection, cyclopPlaneNormal);
+
+                vergenceReading.EyePosition = 
+                    _eyeGazeTrackerSpaceToWorld.MultiplyPoint3x4(_cyclopGaze);
+                vergenceReading.GazeDirection = 
+                    _eyeGazeTrackerSpaceToWorld.MultiplyVector(_cyclopDirection);
+                vergenceReading.FocusPoint =
+                    _eyeGazeTrackerSpaceToWorld.MultiplyVector(cyclopFocus);
+                vergenceReading.IsValid = true;
+                return vergenceReading;
+            }
+            else
+            {
+                return _invalidVergenceReading;
+            }
+        }
+        else
+        {
+            return _invalidVergenceReading;
+        }
+    }
+
+    public VergenceReading GetWorldSpaceBinocularVergence()
+    {
+        if (_eyeGazeTrackerReading.TryGetLeftEyeGazeInTrackerSpace(out _trackerSpaceGazeOriginLeft, out _trackerSpaceGazeDirectionLeft))
+        {
+            if (_eyeGazeTrackerReading.TryGetRightEyeGazeInTrackerSpace(out _trackerSpaceGazeOriginRight, out _trackerSpaceGazeDirectionRight))
+            {
+                leftGaze = ToUnity(_trackerSpaceGazeOriginLeft);
+                leftDirection = ToUnity(_trackerSpaceGazeDirectionLeft);
+                rightGaze = ToUnity(_trackerSpaceGazeOriginRight);
+                rightDirection = ToUnity(_trackerSpaceGazeDirectionRight);
+
+                divisor = 1 - (Mathf.Pow(Vector3.Dot(leftDirection, rightDirection), 2.0f));
+                leftScalar = Vector3.Dot((rightDirection * Vector3.Dot(rightDirection, leftDirection) - leftDirection), (leftGaze - rightGaze)) / divisor;
+                rightScalar = Vector3.Dot((rightDirection - leftDirection * Vector3.Dot(rightDirection, leftDirection)), (leftGaze - rightGaze)) / divisor;
+                cyclopFocus = ((leftGaze + leftScalar * leftDirection) + (rightGaze + rightScalar * rightDirection)) / 2.0f;
+                _eyeGazeTrackerSpaceToPlayspace.SetTRS(_eyeGazeTrackerPose.position, _eyeGazeTrackerPose.rotation, Vector3.one);
+
+                // Construct the matrix to transform gaze data from tracker space to Unity world space
+                _eyeGazeTrackerSpaceToWorld = (_mixedRealityPlayspace != null) ?
+                        _mixedRealityPlayspace.localToWorldMatrix * _eyeGazeTrackerSpaceToPlayspace :
+                        _eyeGazeTrackerSpaceToPlayspace;
+
+                //calculate cyclopean gaze direction
+                _cyclopDirection = ToUnity(System.Numerics.Vector3.Normalize(System.Numerics.Vector3.Add(_trackerSpaceGazeDirectionLeft, _trackerSpaceGazeDirectionRight)));
+                _cyclopGaze = ToUnity(System.Numerics.Vector3.Divide(System.Numerics.Vector3.Add(_trackerSpaceGazeOriginLeft, _trackerSpaceGazeOriginRight), 2.0f));
+
+                vergenceReading.EyePosition =
+                    _eyeGazeTrackerSpaceToWorld.MultiplyPoint3x4(_cyclopGaze);
+                vergenceReading.GazeDirection =
+                    _eyeGazeTrackerSpaceToWorld.MultiplyVector(_cyclopDirection);
+                vergenceReading.FocusPoint =
+                    _eyeGazeTrackerSpaceToWorld.MultiplyVector(cyclopFocus);
+                vergenceReading.IsValid = true;
+                return vergenceReading;
+            }
+            else
+            {
+                return _invalidVergenceReading;
+            }
+        }
+        else
+        {
+            return _invalidVergenceReading;
+        }
     }
 
     private async void Start()
