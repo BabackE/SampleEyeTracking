@@ -247,16 +247,21 @@ public class ExtendedEyeGazeDataProvider : MonoBehaviour
                 rightGaze = ToUnity(_trackerSpaceGazeOriginRight);
                 rightDirection = ToUnity(_trackerSpaceGazeDirectionRight);
 
-                divisor = 1 - (Mathf.Pow(Vector3.Dot(leftDirection, rightDirection), 2.0f));
-                leftScalar = Vector3.Dot((rightDirection * Vector3.Dot(rightDirection, leftDirection) - leftDirection), (leftGaze - rightGaze)) / divisor;
-                rightScalar = Vector3.Dot((rightDirection - leftDirection * Vector3.Dot(rightDirection, leftDirection)), (leftGaze - rightGaze)) / divisor;
-                cyclopFocus = ((leftGaze + leftScalar * leftDirection) + (rightGaze + rightScalar * rightDirection)) / 2.0f;
-                _eyeGazeTrackerSpaceToPlayspace.SetTRS(_eyeGazeTrackerPose.position, _eyeGazeTrackerPose.rotation, Vector3.one);
-
                 // Construct the matrix to transform gaze data from tracker space to Unity world space
+                _eyeGazeTrackerSpaceToPlayspace.SetTRS(_eyeGazeTrackerPose.position, _eyeGazeTrackerPose.rotation, Vector3.one);
                 _eyeGazeTrackerSpaceToWorld = (_mixedRealityPlayspace != null) ?
                         _mixedRealityPlayspace.localToWorldMatrix * _eyeGazeTrackerSpaceToPlayspace :
                         _eyeGazeTrackerSpaceToPlayspace;
+
+                leftGaze = _eyeGazeTrackerSpaceToWorld.MultiplyPoint3x4(leftGaze);
+                leftDirection = _eyeGazeTrackerSpaceToWorld.MultiplyVector(leftDirection);
+                rightGaze = _eyeGazeTrackerSpaceToWorld.MultiplyPoint3x4(rightGaze);
+                rightDirection = _eyeGazeTrackerSpaceToWorld.MultiplyVector(rightDirection);
+
+                divisor = 1 - (Mathf.Pow(Vector3.Dot(leftDirection, rightDirection), 2.0f));
+                leftScalar = Vector3.Dot((Vector3.Dot(rightDirection, leftDirection) * rightDirection - leftDirection), (leftGaze - rightGaze)) / divisor;
+                rightScalar = Vector3.Dot((rightDirection - Vector3.Dot(rightDirection, leftDirection) * leftDirection), (leftGaze - rightGaze)) / divisor;
+                cyclopFocus = ((leftGaze + leftScalar * leftDirection) + (rightGaze + rightScalar * rightDirection)) / 2.0f;                
 
                 //calculate cyclopean gaze direction
                 _cyclopDirection = ToUnity(System.Numerics.Vector3.Normalize(System.Numerics.Vector3.Add(_trackerSpaceGazeDirectionLeft, _trackerSpaceGazeDirectionRight)));
@@ -266,8 +271,7 @@ public class ExtendedEyeGazeDataProvider : MonoBehaviour
                     _eyeGazeTrackerSpaceToWorld.MultiplyPoint3x4(_cyclopGaze);
                 vergenceReading.GazeDirection =
                     _eyeGazeTrackerSpaceToWorld.MultiplyVector(_cyclopDirection);
-                vergenceReading.FocusPoint =
-                    _eyeGazeTrackerSpaceToWorld.MultiplyVector(cyclopFocus);
+                vergenceReading.FocusPoint = cyclopFocus;
                 vergenceReading.IsValid = true;
                 return vergenceReading;
             }
