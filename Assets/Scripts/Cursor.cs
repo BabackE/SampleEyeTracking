@@ -1,5 +1,10 @@
+using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem.Interactions;
+
+[System.Serializable]
+public class CollisionEvent : UnityEvent<GameObject, float> { }
 
 public class Cursor : MonoBehaviour
 {
@@ -7,6 +12,8 @@ public class Cursor : MonoBehaviour
     private const float SELECTION_TIME = 0.5f; // Time for the selection to occur in seconds
     private const float DEBOUNCE_DELAY = 0.1f;   // Time to wait before reseting a selection
     private float timer = 0;
+
+    public CollisionEvent OnSuccessfulCollision = new CollisionEvent();
 
     // Called when a collision occurs with this object
     void OnCollisionEnter(Collision collision)
@@ -20,7 +27,7 @@ public class Cursor : MonoBehaviour
             Debug.Log("Collided: " + collision.gameObject.name);
 
             // Change scale of current object
-            //collision.gameObject.GetComponent<Renderer>().material.color = Color.red;
+            collision.gameObject.GetComponent<Renderer>().material.color = Color.blue;
 
             currentSelection = collision.gameObject;
         }
@@ -36,10 +43,14 @@ public class Cursor : MonoBehaviour
             timer += Time.fixedDeltaTime;
             if (timer >= SELECTION_TIME)
             {
-                timer = 0;
-                // Change scale of current object
+                // Change color of current object
                 collision.gameObject.GetComponent<Renderer>().material.color = Color.red;
+                Debug.Log("Sending CollisionEvent");
+                OnSuccessfulCollision.Invoke(currentSelection, timer);
+
                 currentSelection = null;
+
+                timer = 0;
             }
         }
     }
@@ -57,7 +68,10 @@ public class Cursor : MonoBehaviour
     private void ResetSelection()
     {
         timer = 0;
-        currentSelection = null;
+        if (currentSelection != null)
+        {
+            currentSelection.gameObject.GetComponent<Renderer>().material.color = Color.white;
+            currentSelection = null;
+        }
     }
-
 }
