@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem.Interactions;
 
 [System.Serializable]
-public class CollisionEvent : UnityEvent<GameObject, float> { }
+public class CollisionEvent : UnityEvent<GameObject, float, float, float> { }
 
 public class Cursor : MonoBehaviour
 {
@@ -14,6 +14,11 @@ public class Cursor : MonoBehaviour
     private float timer = 0;
 
     public CollisionEvent OnSuccessfulCollision = new CollisionEvent();
+
+    public void ToggleRenderer()
+    {
+        this.GetComponent<MeshRenderer>().enabled = !this.GetComponent<MeshRenderer>().enabled;
+    }
 
     // Called when a collision occurs with this object
     void OnCollisionEnter(Collision collision)
@@ -45,12 +50,34 @@ public class Cursor : MonoBehaviour
             {
                 // Change color of current object
                 collision.gameObject.GetComponent<Renderer>().material.color = Color.red;
-                Debug.Log("Sending CollisionEvent");
-                OnSuccessfulCollision.Invoke(currentSelection, timer);
+                try
+                {
+                    ExtendedEyeGazeDataProvider provider = gameObject.GetComponentInParent<ExtendedEyeGazeDataProvider>();
+                    float distanceToVergence = 0f;
+                    float sizeOfObject = 0f;
+                    if (provider == null)
+                    {
+                        Debug.LogError("ExtendedEyeGazeDataProvider component not found in parent!");
+                        return;
+                    }
+                    else
+                    {
+                        ExtendedEyeGazeDataProvider.VergenceReading vergenceReading = provider.GetWorldSpaceBinocularVergence();
+                        distanceToVergence = (vergenceReading.EyePosition - vergenceReading.FocusPoint).magnitude;
+                        sizeOfObject = collision.gameObject.GetComponent<Transform>().lossyScale.x;
+                    }
 
-                currentSelection = null;
+                    Debug.Log("Sending CollisionEvent");
+                    OnSuccessfulCollision.Invoke(currentSelection, timer, distanceToVergence, sizeOfObject);
 
-                timer = 0;
+                    currentSelection = null;
+
+                    timer = 0;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError (e);
+                }
             }
         }
     }

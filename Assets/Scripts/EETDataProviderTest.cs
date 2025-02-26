@@ -71,7 +71,10 @@ public class EETDataProviderTest : MonoBehaviour
         {
             //VergenceObject.transform.position = vergeReading.EyePosition + 1.2f * vergeReading.GazeDirection;
             //VergenceObject.transform.position = vergeReading.EyePosition + vergeReading.FocusPoint;
-            VergenceObject.transform.position = vergeReading.FocusPoint;
+            if (vergeReading.FocusPoint.magnitude > 0.0f)
+            {
+                VergenceObject.transform.position = vergeReading.FocusPoint;
+            }
             VergenceObject.SetActive(true);
         }
         else

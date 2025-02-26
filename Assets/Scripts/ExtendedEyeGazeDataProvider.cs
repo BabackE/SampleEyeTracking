@@ -191,7 +191,7 @@ public class ExtendedEyeGazeDataProvider : MonoBehaviour
     private float rightScalar;
     private float divisor;
     private VergenceReading vergenceReading;
-    private VergenceReading _invalidVergenceReading = new VergenceReading(false, Vector3.zero, Vector3.zero, Vector3.zero);
+    private VergenceReading _invalidVergenceReading = new VergenceReading(true, Vector3.zero, Vector3.zero, Vector3.zero);
     public VergenceReading GetWorldSpaceCyclopVergence()
     {
         if(_eyeGazeTrackerReading.TryGetLeftEyeGazeInTrackerSpace(out _trackerSpaceGazeOriginLeft, out _trackerSpaceGazeDirectionLeft))
@@ -238,6 +238,12 @@ public class ExtendedEyeGazeDataProvider : MonoBehaviour
 
     public VergenceReading GetWorldSpaceBinocularVergence()
     {
+        if (_eyeGazeTrackerReading == null)
+        {
+            Debug.LogWarning("No valid _eyeGazeTrackerReading available.");
+            return _invalidVergenceReading;
+        }
+
         if (_eyeGazeTrackerReading.TryGetLeftEyeGazeInTrackerSpace(out _trackerSpaceGazeOriginLeft, out _trackerSpaceGazeDirectionLeft))
         {
             if (_eyeGazeTrackerReading.TryGetRightEyeGazeInTrackerSpace(out _trackerSpaceGazeOriginRight, out _trackerSpaceGazeDirectionRight))

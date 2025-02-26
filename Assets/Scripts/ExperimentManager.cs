@@ -2,18 +2,34 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System;
 
 
 public class ExperimentManager : MonoBehaviour
 {
+    public struct FittsLawMeasurements
+    {
+        public float vergenceDistance;
+        public float sizeOfObject;
+        public FittsLawMeasurements(float vd, float so)
+        {
+            vergenceDistance = vd;
+            sizeOfObject = so;
+        }
+    }
+
+
     // Targets
     [SerializeField] private Cursor collisionSender;
     [SerializeField] private TextMeshProUGUI resultsText;
+    [SerializeField] private Boolean hide = false;
     private float[] targetHitTimes;
+    private FittsLawMeasurements[] fittsLawDistanceOverSize;
     private GameObject[] targets;
     private int targetHitCount;
     private float paintStartTime;
     private float RESTART_EXPERIMENT_TIME = 10;
+
 
     void Awake()
     {
@@ -31,6 +47,12 @@ public class ExperimentManager : MonoBehaviour
         
     }
 
+    // This method toggles the boolean value.
+    public void ToggleBool()
+    {
+        hide = !hide;
+    }
+
     // Update is called once per frame
     void OnDisable()
     {
@@ -40,7 +62,7 @@ public class ExperimentManager : MonoBehaviour
         }
     }
 
-    private void HandleSuccessfulCollision(GameObject target, float collisionTime)
+    private void HandleSuccessfulCollision(GameObject target, float collisionTime, float vergenceDistance, float sizeOfObject)
     {
         Debug.Log("Received CollisionEvent, checking against " + targets.Length + " against " + target.name);
         // Loop through the targets array to find the matching target.
@@ -53,7 +75,9 @@ public class ExperimentManager : MonoBehaviour
                 if (targetHitTimes[i] < 0)
                 {
                     targetHitTimes[i] = (paintStartTime == 0) ? 0 : Time.time - this.paintStartTime;
-                    target.GetComponent<Renderer>().enabled = false;
+                    fittsLawDistanceOverSize[i].sizeOfObject = sizeOfObject; 
+                    fittsLawDistanceOverSize[i].vergenceDistance = vergenceDistance;
+                    target.GetComponent<Renderer>().enabled = hide;
                     Debug.Log($"Recorded collision for target {target.name}: Time = {targetHitTimes[i]}");
                 }
                 else
@@ -86,7 +110,7 @@ public class ExperimentManager : MonoBehaviour
             string results = "Collision Times:\n";
             for (int i = 0; i < targetHitTimes.Length; i++)
             {
-                results += $"{targets[i].name}: {targetHitTimes[i]:F2} seconds\n";
+                results += $"{targets[i].name}: {targetHitTimes[i]:F2} s, d={fittsLawDistanceOverSize[i].vergenceDistance:F2}, s={fittsLawDistanceOverSize[i].sizeOfObject:F2}, f={2 * fittsLawDistanceOverSize[i].vergenceDistance / fittsLawDistanceOverSize[i].sizeOfObject:F2}\n";
             }
             resultsText.text = results;
             Debug.Log("All targets have been hit. Results updated.");
@@ -111,11 +135,15 @@ public class ExperimentManager : MonoBehaviour
 
         // Initialize your hit times array based on the number of targets
         if (targetHitTimes == null)
+        {
             targetHitTimes = new float[targets.Length];
+            fittsLawDistanceOverSize = new FittsLawMeasurements[targets.Length];
+        }
 
         for (int i = 0; i < targetHitTimes.Length; i++)
         {
             targetHitTimes[i] = -1f; // -1 indicates the target hasn't been hit
+            fittsLawDistanceOverSize[i] = new FittsLawMeasurements(0f,0f);
         }
         this.targetHitCount = 0;
         this.paintStartTime = 0.0f;
