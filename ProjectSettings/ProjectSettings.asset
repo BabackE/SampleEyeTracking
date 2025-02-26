@@ -632,7 +632,7 @@ PlayerSettings:
   scriptingDefineSymbols:
     1: USE_INPUT_SYSTEM_POSE_CONTROL;USE_INPUT_SYSTEM_POSE_CONTROL
     7: USE_INPUT_SYSTEM_POSE_CONTROL;USE_INPUT_SYSTEM_POSE_CONTROL
-    14: USE_INPUT_SYSTEM_POSE_CONTROL;USE_INPUT_SYSTEM_POSE_CONTROL
+    14: USE_INPUT_SYSTEM_POSE_CONTROL
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend: {}
@@ -658,7 +658,7 @@ PlayerSettings:
   metroCertificatePassword: 
   metroCertificateSubject: Microsoft
   metroCertificateIssuer: Microsoft
-  metroCertificateNotAfter: 80fb4b02a792dc01
+  metroCertificateNotAfter: 00d5998418a7dc01
   metroApplicationDescription: Extended Eye Tracking Unity Sample
   wsaImages: {}
   metroTileShortName: ExtendedEyeTrackingUnitySample

@@ -53,6 +53,7 @@ public class ExperimentManager : MonoBehaviour
                 if (targetHitTimes[i] < 0)
                 {
                     targetHitTimes[i] = (paintStartTime == 0) ? 0 : Time.time - this.paintStartTime;
+                    target.GetComponent<Renderer>().enabled = false;
                     Debug.Log($"Recorded collision for target {target.name}: Time = {targetHitTimes[i]}");
                 }
                 else
@@ -89,6 +90,7 @@ public class ExperimentManager : MonoBehaviour
             }
             resultsText.text = results;
             Debug.Log("All targets have been hit. Results updated.");
+
             Invoke("StartExperiment", RESTART_EXPERIMENT_TIME);
         }
     }
@@ -100,7 +102,10 @@ public class ExperimentManager : MonoBehaviour
         Debug.Log("Found " + targets.Length + " targets");
 
         for (int i = 0; i < targets.Length; i++)
-            targets[i].GetComponent<Renderer>().material.color = Color.white;
+        {
+            targets[i].GetComponent<Renderer>().enabled = true;
+            targets[i].GetComponent<Renderer>().material.color = Color.white; 
+        }
         
         resultsText.text = "NEW EXPERIMENT!";
 

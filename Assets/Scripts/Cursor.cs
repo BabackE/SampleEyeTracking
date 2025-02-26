@@ -59,6 +59,7 @@ public class Cursor : MonoBehaviour
     {
         if (currentSelection != null && collision.gameObject == currentSelection)
         {
+            collision.gameObject.GetComponent<Renderer>().material.color = Color.white;
             // Instead of immediately resetting, schedule a reset after DEBOUNCE_DELAY seconds.
             Invoke("ResetSelection", DEBOUNCE_DELAY);
         }
