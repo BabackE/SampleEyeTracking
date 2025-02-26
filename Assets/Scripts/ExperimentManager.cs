@@ -13,21 +13,11 @@ public class ExperimentManager : MonoBehaviour
     private GameObject[] targets;
     private int targetHitCount;
     private float paintStartTime;
+    private float RESTART_EXPERIMENT_TIME = 10;
 
     void Awake()
     {
-        // Automatically populate the targets array with all objects tagged "Target"
-        this.targets = GameObject.FindGameObjectsWithTag("Target");
-        Debug.Log("Found " + targets.Length + " targets");
-
-        // Initialize your hit times array based on the number of targets
-        targetHitTimes = new float[targets.Length];
-        for (int i = 0; i < targetHitTimes.Length; i++)
-        {
-            targetHitTimes[i] = -1f; // -1 indicates the target hasn't been hit
-        }
-        this.targetHitCount = 0;
-        this.paintStartTime = 0f;
+        StartExperiment();
     }
 
     // Start is called before the first frame update
@@ -62,7 +52,7 @@ public class ExperimentManager : MonoBehaviour
                 // Record the hit time if this target hasn't been hit before.
                 if (targetHitTimes[i] < 0)
                 {
-                    targetHitTimes[i] = Time.time - this.paintStartTime; 
+                    targetHitTimes[i] = (paintStartTime == 0) ? 0 : Time.time - this.paintStartTime;
                     Debug.Log($"Recorded collision for target {target.name}: Time = {targetHitTimes[i]}");
                 }
                 else
@@ -77,7 +67,7 @@ public class ExperimentManager : MonoBehaviour
         int allTargetsHit = 0;
         for (int i = 0; i < targetHitTimes.Length; i++)
         {
-            if (targetHitTimes[i] > 0)
+            if (targetHitTimes[i] >= 0)
             {
                 allTargetsHit++;
             }
@@ -90,7 +80,7 @@ public class ExperimentManager : MonoBehaviour
         this.targetHitCount = allTargetsHit;
 
         // If all targets are hit, update the UI element with their collision times.
-        if (allTargetsHit == targets.Length)
+        if (this.targetHitCount == targets.Length)
         {
             string results = "Collision Times:\n";
             for (int i = 0; i < targetHitTimes.Length; i++)
@@ -99,11 +89,30 @@ public class ExperimentManager : MonoBehaviour
             }
             resultsText.text = results;
             Debug.Log("All targets have been hit. Results updated.");
+            Invoke("StartExperiment", RESTART_EXPERIMENT_TIME);
         }
     }
 
     void StartExperiment()
     {
+        // Automatically populate the targets array with all objects tagged "Target"
+        this.targets = GameObject.FindGameObjectsWithTag("Target");
+        Debug.Log("Found " + targets.Length + " targets");
 
+        for (int i = 0; i < targets.Length; i++)
+            targets[i].GetComponent<Renderer>().material.color = Color.white;
+        
+        resultsText.text = "NEW EXPERIMENT!";
+
+        // Initialize your hit times array based on the number of targets
+        if (targetHitTimes == null)
+            targetHitTimes = new float[targets.Length];
+
+        for (int i = 0; i < targetHitTimes.Length; i++)
+        {
+            targetHitTimes[i] = -1f; // -1 indicates the target hasn't been hit
+        }
+        this.targetHitCount = 0;
+        this.paintStartTime = 0.0f;
     }
 }
