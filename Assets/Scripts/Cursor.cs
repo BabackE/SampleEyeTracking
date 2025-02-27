@@ -32,9 +32,14 @@ public class Cursor : MonoBehaviour
             Debug.Log("Collided: " + collision.gameObject.name);
 
             // Change scale of current object
-            collision.gameObject.GetComponent<Renderer>().material.color = Color.blue;
+            if (collision.gameObject.GetComponent<Renderer>().material.color != Color.red)
+            {
+                collision.gameObject.GetComponent<Renderer>().material.color = Color.blue;
+                currentSelection = collision.gameObject;
 
-            currentSelection = collision.gameObject;
+            }
+           
+            
         }
     }
 

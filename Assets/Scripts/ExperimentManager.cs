@@ -22,13 +22,22 @@ public class ExperimentManager : MonoBehaviour
     // Targets
     [SerializeField] private Cursor collisionSender;
     [SerializeField] private TextMeshProUGUI resultsText;
+    [SerializeField] private TextMeshProUGUI hideButtonText;
     [SerializeField] private Boolean hide = false;
+    [SerializeField]
+    private Vector3[] originalPos = new Vector3[3]
+    {
+        new Vector3(0f, 0f, -0.2f),
+        new Vector3(0f, 0f, 0f),
+        new Vector3(0f, 0f, 0.2f)
+    };
     private float[] targetHitTimes;
     private FittsLawMeasurements[] fittsLawDistanceOverSize;
     private GameObject[] targets;
     private int targetHitCount;
     private float paintStartTime;
     private float RESTART_EXPERIMENT_TIME = 10;
+    
 
 
     void Awake()
@@ -48,9 +57,12 @@ public class ExperimentManager : MonoBehaviour
     }
 
     // This method toggles the boolean value.
-    public void ToggleBool()
+    public void ToggleHide()
     {
         hide = !hide;
+        Debug.Log("Hide: " + hide);
+        hideButtonText.text = hide ? "Show Cubes" : "Hide Cubes"; 
+
     }
 
     // Update is called once per frame
@@ -115,11 +127,11 @@ public class ExperimentManager : MonoBehaviour
             resultsText.text = results;
             Debug.Log("All targets have been hit. Results updated.");
 
-            Invoke("StartExperiment", RESTART_EXPERIMENT_TIME);
+            //Invoke("StartExperiment", RESTART_EXPERIMENT_TIME);
         }
     }
 
-    void StartExperiment()
+    public void StartExperiment()
     {
         // Automatically populate the targets array with all objects tagged "Target"
         this.targets = GameObject.FindGameObjectsWithTag("Target");
@@ -128,7 +140,9 @@ public class ExperimentManager : MonoBehaviour
         for (int i = 0; i < targets.Length; i++)
         {
             targets[i].GetComponent<Renderer>().enabled = true;
-            targets[i].GetComponent<Renderer>().material.color = Color.white; 
+            targets[i].GetComponent<Renderer>().material.color = Color.white;
+            targets[i].transform.localScale = Vector3.one * 0.05f;
+            targets[i].transform.localPosition = originalPos[i];
         }
         
         resultsText.text = "NEW EXPERIMENT!";
