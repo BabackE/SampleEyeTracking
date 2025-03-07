@@ -4,6 +4,8 @@ using UnityEngine;
 using TMPro;
 using System;
 using System.IO;
+using System.Text;
+
 
 #if ENABLE_WINMD_SUPPORT || WINDOWS_UWP
 using Windows.Stroage;
@@ -233,7 +235,7 @@ public class ExperimentManager : MonoBehaviour
 
         // Create the filename with the timestamp
         string fileName = $"vergencePositions_{timestamp}.csv";
-        filePath = SaveCSV(csvContent.ToString(), filename);
+        string filePath = SaveCSV(csvContent.ToString(), fileName);
 
         Debug.Log($"Writing to {filePath}");
 
@@ -245,14 +247,18 @@ public class ExperimentManager : MonoBehaviour
         // Wait for the next frame
         yield return null;
     }
+#if ENABLE_WINMD_SUPPORT || WINDOWS_UWP
     public async Task<string> SaveCSV(string csvContent, string filename)
     {
-#if ENABLE_WINMD_SUPPORT || WINDOWS_UWP
         return await SaveFileUWP(csvContent, filename);
-#else
-        return SaveFileEditor(csvContent, filename);
-#endif
     }
+#else
+    public string SaveCSV(string csvContent, string filename)
+    { 
+        return SaveFileEditor(csvContent, filename);
+
+    }
+#endif
 #if ENABLE_WINMD_SUPPORT || WINDOWS_UWP
     private async Task<string> SaveFileUWP(string csvContent, string filename)
     {
