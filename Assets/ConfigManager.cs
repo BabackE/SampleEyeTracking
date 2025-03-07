@@ -35,18 +35,12 @@ public class ConfigManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Transform[] ts = GetComponentsInChildren<Transform>();
 
-        for (int i = 0; i < ts.Length; i++)
-        { 
-            ts[i + 1].localScale = currConfig.targetScale[i];
-            ts[i + 1].localPosition = currConfig.targetPos[i];
-        }
     }
 
     public void OnBtn0()
     {
-        Debug.Log("Button 0 Pressed!");
+        Debug.Log("Button 0 Pressed! Reset!");
         // Implement individual actions
         Vector3[] pos = new Vector3[3]
         {
@@ -63,7 +57,16 @@ public class ConfigManager : MonoBehaviour
         int numTargets = 3;
 
         currConfig = new sceneConfig(pos, scale, numTargets);
+
+        Transform[] ts = GetComponentsInChildren<Transform>();
+
+        for (int i = 0; i < ts.Length; i++)
+        {
+            ts[i + 1].localScale = currConfig.targetScale[i];
+            ts[i + 1].localPosition = currConfig.targetPos[i];
+        }
     }
+
     public void OnBtn1()
     {
         Debug.Log("Button 1 Pressed!");
@@ -83,7 +86,16 @@ public class ConfigManager : MonoBehaviour
         int numTargets = 3;
 
         currConfig = new sceneConfig(pos, scale, numTargets);
+
+        Transform[] ts = GetComponentsInChildren<Transform>();
+
+        for (int i = 0; i < ts.Length; i++)
+        {
+            ts[i + 1].localScale = currConfig.targetScale[i];
+            ts[i + 1].localPosition = currConfig.targetPos[i];
+        }
     }
+
     public void OnBtn2()
     {
         Debug.Log("Button 2 Pressed!");
@@ -93,5 +105,13 @@ public class ConfigManager : MonoBehaviour
         int numTargets = 3;
 
         currConfig = new sceneConfig(pos, scale, numTargets);
+
+        Transform[] ts = GetComponentsInChildren<Transform>();
+
+        for (int i = 0; i < ts.Length; i++)
+        {
+            ts[i + 1].localScale = currConfig.targetScale[i];
+            ts[i + 1].localPosition = currConfig.targetPos[i];
+        }
     }
 }

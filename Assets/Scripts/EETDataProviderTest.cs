@@ -109,6 +109,5 @@ public class EETDataProviderTest : MonoBehaviour
         {
             CameraRelativeCombinedGazeObject.SetActive(false);
         }
-
     }
 }
