@@ -8,7 +8,7 @@ using System.Text;
 
 
 #if ENABLE_WINMD_SUPPORT || WINDOWS_UWP
-using Windows.Stroage;
+using Windows.Storage;
 using System.Threading.Tasks;
 #endif
 
@@ -235,7 +235,19 @@ public class ExperimentManager : MonoBehaviour
 
         // Create the filename with the timestamp
         string fileName = $"vergencePositions_{timestamp}.csv";
-        string filePath = SaveCSV(csvContent.ToString(), fileName);
+        #if ENABLE_WINMD_SUPPORT || WINDOWS_UWP
+            // Start the async save task.
+            Task<string> saveTask = SaveCSV(csvContent.ToString(), fileName);
+            // Wait until the task completes.
+            while (!saveTask.IsCompleted)
+            {
+                yield return null;
+            }
+            // Now get the result.
+            string filePath = saveTask.Result;
+        #else
+            string filePath = SaveCSV(csvContent.ToString(), fileName);
+        #endif
 
         Debug.Log($"Writing to {filePath}");
 
